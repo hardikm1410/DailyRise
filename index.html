@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DailyRise - Your Daily Dose of Breakfast Inspiration</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+        }
+
+        .hero {
+            position: relative;
+            height: 600px;
+            background-size: cover;
+            background-position: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            color: black;
+        }
+
+        .hero-content {
+            max-width: 800px;
+            padding: 0 20px;
+        }
+
+        .hero h1 {
+            font-size: 3.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .hero p {
+            font-size: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 1rem 2rem;
+            border-radius: 30px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .btn-primary {
+            background-color: transparent;
+            border: 1px solid black;
+            color: black;
+        }
+
+        .btn-primary:hover {
+            background-color: black;
+            color: white;
+            transform: translateY(-2px);
+            transition: 0.5s;
+        }
+
+        .breakfast-display {
+            margin-top: 2rem;
+            padding: 2rem;
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 15px;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.5s ease;
+        }
+
+        .breakfast-display.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .breakfast-title {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            color: #333;
+        }
+
+        .breakfast-description {
+            font-size: 1.2rem;
+            color: #666;
+            margin-bottom: 1rem;
+        }
+
+        .breakfast-details {
+            font-size: 1rem;
+            color: #888;
+        }
+
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+
+            .hero p {
+                font-size: 1.2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <section class="hero">
+        <div class="hero-content">
+            <h1>DailyRise</h1>
+            <p>Your Daily Dose of Breakfast Inspiration</p>
+            <a href="#" class="btn btn-primary" id="generateBreakfast">Get My Breakfast Idea</a>
+            <div class="breakfast-display" id="breakfastDisplay">
+                <h2 class="breakfast-title" id="breakfastTitle"></h2>
+                <p class="breakfast-description" id="breakfastDescription"></p>
+                <p class="breakfast-details" id="breakfastDetails"></p>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        const breakfastOptions = [
+            {
+                title: "Roti-Bauvo",
+            },
+            {
+                title: "Roti-sabzi",
+            },
+            {
+                title: "Chana",
+            },
+            {
+                title: "Mung",
+            },
+            {
+                title: "Khichdi",
+            },
+            {
+                title: "Parotha-shak",
+            }
+        ];
+
+        const generateButton = document.getElementById('generateBreakfast');
+        const breakfastDisplay = document.getElementById('breakfastDisplay');
+        const breakfastTitle = document.getElementById('breakfastTitle');
+        const breakfastDescription = document.getElementById('breakfastDescription');
+        const breakfastDetails = document.getElementById('breakfastDetails');
+
+        let previousIndex = -1;
+
+        generateButton.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            // Generate random index (different from previous)
+            let randomIndex;
+            do {
+                randomIndex = Math.floor(Math.random() * breakfastOptions.length);
+            } while (randomIndex === previousIndex && breakfastOptions.length > 1);
+            
+            previousIndex = randomIndex;
+            
+            // Get random breakfast
+            const breakfast = breakfastOptions[randomIndex];
+            
+            // Update display
+            breakfastTitle.textContent = breakfast.title;
+            breakfastDescription.textContent = breakfast.description;
+            breakfastDetails.textContent = breakfast.details;
+            
+            // Reset animation
+            breakfastDisplay.classList.remove('visible');
+            void breakfastDisplay.offsetWidth; // Trigger reflow
+            breakfastDisplay.classList.add('visible');
+        });
+    </script>
+</body>
+</html>
