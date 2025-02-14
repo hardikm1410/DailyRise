@@ -130,12 +130,12 @@
     </style>
 </head>
 <body>
-    <section class="hero">
+   <section class="hero">
         <div class="hero-content">
             <h1>DailyRise</h1>
             <p>Your Daily Dose of Breakfast Inspiration</p>
             <a href="#" class="btn btn-primary" id="generateBreakfast">Get The Breakfast Idea</a>
-            <p id="buttonMessage" class="button-message">Come back on Tommorow</p>
+            <p id="buttonMessage" class="button-message"></p>
             <div class="breakfast-display" id="breakfastDisplay">
                 <h2 class="breakfast-title" id="breakfastTitle"></h2>
                 <p class="breakfast-description" id="breakfastDescription"></p>
@@ -152,24 +152,6 @@
             {
                 title: "Roti-sabzi",
             },
-             {
-                title: "Muth",
-            },
-             {
-                title: "Bataka-Pauva",
-            },
-             {
-                title: "Thepla_(Plain)",
-            },
-             {
-                title: "Thepla_(Methi)",
-            },
-             {
-                title: "Bhaji-Parotha",
-            },
-             {
-                title: "Thepla_sukibhaji",
-            },
             {
                 title: "Chana",
             },
@@ -185,42 +167,17 @@
         ];
 
         const generateButton = document.getElementById('generateBreakfast');
+        const buttonMessage = document.getElementById('buttonMessage');
         const breakfastDisplay = document.getElementById('breakfastDisplay');
         const breakfastTitle = document.getElementById('breakfastTitle');
         const breakfastDescription = document.getElementById('breakfastDescription');
         const breakfastDetails = document.getElementById('breakfastDetails');
 
-        let previousIndex = -1;
-
-        generateButton.addEventListener('click', function(e) {
-            e.preventDefault();
-            
-            // Generate random index (different from previous)
-            let randomIndex;
-            do {
-                randomIndex = Math.floor(Math.random() * breakfastOptions.length);
-            } while (randomIndex === previousIndex && breakfastOptions.length > 1);
-            
-            previousIndex = randomIndex;
-            
-            // Get random breakfast
-            const breakfast = breakfastOptions[randomIndex];
-            
-            // Update display
-            breakfastTitle.textContent = breakfast.title;
-            breakfastDescription.textContent = breakfast.description;
-            breakfastDetails.textContent = breakfast.details;
-            
-            // Reset animation
-            breakfastDisplay.classList.remove('visible');
-            void breakfastDisplay.offsetWidth; // Trigger reflow
-            breakfastDisplay.classList.add('visible');
-
-                    // Track recent breakfasts
+        // Track recent breakfasts
         const recentBreakfasts = [];
-        const MAX_HISTORY = 4; // Track last 4 days
+        const MAX_HISTORY = 4;
 
-            // Check if button was clicked today
+        // Check if button was clicked today
         function wasClickedToday() {
             const lastClick = localStorage.getItem('lastButtonClick');
             if (!lastClick) return false;
@@ -244,14 +201,12 @@
             buttonMessage.classList.remove('visible');
         }
 
-
-        // Load previous selections from localStorage
+        // Load previous selections
         function loadHistory() {
             const saved = localStorage.getItem('breakfastHistory');
             if (saved) {
                 const parsed = JSON.parse(saved);
-                // Only load if the data is from the current week
-                const lastDate = new Date(parsed[parsed.length - 1].date);
+                const lastDate = new Date(parsed[parsed.length - 1]?.date);
                 const currentDate = new Date();
                 if (currentDate - lastDate < 7 * 24 * 60 * 60 * 1000) {
                     return parsed;
@@ -260,21 +215,20 @@
             return [];
         }
 
-        // Save selections to localStorage
+        // Save selections
         function saveHistory() {
             localStorage.setItem('breakfastHistory', JSON.stringify(recentBreakfasts));
         }
 
-        // Get a random breakfast that hasn't been used in the last 4 days
+        // Get new breakfast
         function getNewBreakfast() {
             const recentTitles = recentBreakfasts.map(item => item.title);
             const availableOptions = breakfastOptions.filter(option => 
                 !recentTitles.includes(option.title)
             );
 
-            // If all options have been used recently, remove oldest and try again
             if (availableOptions.length === 0) {
-                recentBreakfasts.shift(); // Remove oldest
+                recentBreakfasts.shift();
                 return getNewBreakfast();
             }
 
@@ -282,28 +236,43 @@
             return availableOptions[randomIndex];
         }
 
-        // Initialize with saved history
+        // Initialize
         const savedHistory = loadHistory();
         recentBreakfasts.push(...savedHistory);
+
+        // Check button state on load
+        if (wasClickedToday()) {
+            disableButton();
+            // Show last selection if available
+            const lastBreakfast = recentBreakfasts[recentBreakfasts.length - 1];
+            if (lastBreakfast) {
+                breakfastTitle.textContent = lastBreakfast.title;
+                breakfastDisplay.classList.add('visible');
+            }
+        }
 
         generateButton.addEventListener('click', function(e) {
             e.preventDefault();
             
-            // Get new unique breakfast
+            if (wasClickedToday()) {
+                return; // Prevent multiple clicks on same day
+            }
+            
+            // Get new breakfast
             const breakfast = getNewBreakfast();
             
-            // Add to history with current date
+            // Add to history
             recentBreakfasts.push({
                 title: breakfast.title,
                 date: new Date().toISOString()
             });
 
-            // Keep only last 4 days
+            // Maintain history length
             while (recentBreakfasts.length > MAX_HISTORY) {
                 recentBreakfasts.shift();
             }
 
-            // Save updated history
+            // Save history
             saveHistory();
             
             // Update display
@@ -313,9 +282,20 @@
             
             // Animation
             breakfastDisplay.classList.remove('visible');
-            void breakfastDisplay.offsetWidth; // Trigger reflow
+            void breakfastDisplay.offsetWidth;
             breakfastDisplay.classList.add('visible');
+
+            // Record click time and disable button
+            localStorage.setItem('lastButtonClick', new Date().toISOString());
+            disableButton();
         });
+
+        // Optional: Check for new day every minute
+        setInterval(() => {
+            if (!wasClickedToday()) {
+                enableButton();
+            }
+        }, 60000);
     </script>
 </body>
 </html>
