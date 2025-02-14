@@ -98,6 +98,26 @@
             color: #888;
         }
 
+                /* Add to existing styles */
+        .btn-disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            pointer-events: none;
+            background-color: #ccc;
+            border-color: #999;
+        }
+
+        .button-message {
+            font-size: 0.9rem;
+            color: #666;
+            margin-top: 1rem;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .button-message.visible {
+            opacity: 1;
+
         @media (max-width: 768px) {
             .hero h1 {
                 font-size: 2.5rem;
@@ -115,6 +135,7 @@
             <h1>DailyRise</h1>
             <p>Your Daily Dose of Breakfast Inspiration</p>
             <a href="#" class="btn btn-primary" id="generateBreakfast">Get The Breakfast Idea</a>
+            <p id="buttonMessage" class="button-message">Come back on Tommorow</p>
             <div class="breakfast-display" id="breakfastDisplay">
                 <h2 class="breakfast-title" id="breakfastTitle"></h2>
                 <p class="breakfast-description" id="breakfastDescription"></p>
@@ -130,6 +151,24 @@
             },
             {
                 title: "Roti-sabzi",
+            },
+             {
+                title: "Muth",
+            },
+             {
+                title: "Bataka-Pauva",
+            },
+             {
+                title: "Thepla_(Plain)",
+            },
+             {
+                title: "Thepla_(Methi)",
+            },
+             {
+                title: "Bhaji-Parotha",
+            },
+             {
+                title: "Thepla_sukibhaji",
             },
             {
                 title: "Chana",
@@ -173,6 +212,106 @@
             breakfastDetails.textContent = breakfast.details;
             
             // Reset animation
+            breakfastDisplay.classList.remove('visible');
+            void breakfastDisplay.offsetWidth; // Trigger reflow
+            breakfastDisplay.classList.add('visible');
+
+                    // Track recent breakfasts
+        const recentBreakfasts = [];
+        const MAX_HISTORY = 4; // Track last 4 days
+
+            // Check if button was clicked today
+        function wasClickedToday() {
+            const lastClick = localStorage.getItem('lastButtonClick');
+            if (!lastClick) return false;
+
+            const lastClickDate = new Date(lastClick);
+            const today = new Date();
+            
+            return lastClickDate.toDateString() === today.toDateString();
+        }
+
+        // Disable button
+        function disableButton() {
+            generateButton.classList.add('btn-disabled');
+            buttonMessage.textContent = 'Come back tomorrow for a new breakfast idea!';
+            buttonMessage.classList.add('visible');
+        }
+
+        // Enable button
+        function enableButton() {
+            generateButton.classList.remove('btn-disabled');
+            buttonMessage.classList.remove('visible');
+        }
+
+
+        // Load previous selections from localStorage
+        function loadHistory() {
+            const saved = localStorage.getItem('breakfastHistory');
+            if (saved) {
+                const parsed = JSON.parse(saved);
+                // Only load if the data is from the current week
+                const lastDate = new Date(parsed[parsed.length - 1].date);
+                const currentDate = new Date();
+                if (currentDate - lastDate < 7 * 24 * 60 * 60 * 1000) {
+                    return parsed;
+                }
+            }
+            return [];
+        }
+
+        // Save selections to localStorage
+        function saveHistory() {
+            localStorage.setItem('breakfastHistory', JSON.stringify(recentBreakfasts));
+        }
+
+        // Get a random breakfast that hasn't been used in the last 4 days
+        function getNewBreakfast() {
+            const recentTitles = recentBreakfasts.map(item => item.title);
+            const availableOptions = breakfastOptions.filter(option => 
+                !recentTitles.includes(option.title)
+            );
+
+            // If all options have been used recently, remove oldest and try again
+            if (availableOptions.length === 0) {
+                recentBreakfasts.shift(); // Remove oldest
+                return getNewBreakfast();
+            }
+
+            const randomIndex = Math.floor(Math.random() * availableOptions.length);
+            return availableOptions[randomIndex];
+        }
+
+        // Initialize with saved history
+        const savedHistory = loadHistory();
+        recentBreakfasts.push(...savedHistory);
+
+        generateButton.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            // Get new unique breakfast
+            const breakfast = getNewBreakfast();
+            
+            // Add to history with current date
+            recentBreakfasts.push({
+                title: breakfast.title,
+                date: new Date().toISOString()
+            });
+
+            // Keep only last 4 days
+            while (recentBreakfasts.length > MAX_HISTORY) {
+                recentBreakfasts.shift();
+            }
+
+            // Save updated history
+            saveHistory();
+            
+            // Update display
+            breakfastTitle.textContent = breakfast.title;
+            breakfastDescription.textContent = breakfast.description;
+            breakfastDetails.textContent = breakfast.details;
+            
+            // Animation
             breakfastDisplay.classList.remove('visible');
             void breakfastDisplay.offsetWidth; // Trigger reflow
             breakfastDisplay.classList.add('visible');
