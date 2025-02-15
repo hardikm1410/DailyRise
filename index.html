@@ -166,53 +166,55 @@
         const breakfastOptions = [
             {
                 title: "Roti-Bauvo",
+                description: ""
             },
             {
                 title: "Bataka-pauva",
-                description: "+ Sev-Mummra",
+                description: "+ Sev-Mummra"
             },
             {
                 title: "Muth",
-                description: "+ Sev-Mummra",
+                description: "+ Sev-Mummra"
             },
             {
                 title: "Bhaji-Parotha",
-                description: "+ Gud",
+                description: "+ Gud"
             },
             {
                 title: "Thepla_Plain",
-                description: "+ Dahi",
+                description: "+ Dahi"
             },
             {
                 title: "Thepla_Methi",
-                description: "+ Dahi + Sev-Mummra",
+                description: "+ Dahi + Sev-Mummra"
             },
             {
                 title: "Roti-sabzi",
-                description: "+ Gud",
+                description: "+ Gud"
             },
             {
                 title: "Chana",
-                description: "+ Khakhra",
+                description: "+ Khakhra"
             },
             {
                 title: "Thepla_Sukibhaji",
+                description: ""
             },
             {
                 title: "Mung",
-                description: "+ Sev-Mummra",
+                description: "+ Sev-Mummra"
             },
             {
                 title: "Khichdi",
-                description: "+ Sev-Mummra",
+                description: "+ Sev-Mummra"
             },
             {
                 title: "Thepla_Dudhi",
-                description: "+ Dahi + Sev-Mummra",
+                description: "+ Dahi + Sev-Mummra"
             },
             {
                 title: "Parotha-shak",
-                description: "+ Dahi",
+                description: "+ Dahi"
             }
         ];
 
@@ -241,13 +243,13 @@
             generateButton.classList.add('btn-disabled');
             buttonMessage.textContent = 'Come back tomorrow for a new breakfast idea!';
             buttonMessage.classList.add('visible');
-            notPossibleLink.style.display = 'block'; // Show the Not Possible link
+            notPossibleLink.style.display = 'block';
         }
 
         function enableButton() {
             generateButton.classList.remove('btn-disabled');
             buttonMessage.classList.remove('visible');
-            notPossibleLink.style.display = 'none'; // Hide the Not Possible link
+            notPossibleLink.style.display = 'none';
         }
 
         function loadHistory() {
@@ -282,6 +284,14 @@
             return availableOptions[randomIndex];
         }
 
+        function displayBreakfast(breakfast) {
+            breakfastTitle.textContent = breakfast.title;
+            breakfastDescription.textContent = breakfast.description || '';
+            breakfastDetails.textContent = breakfast.details || '';
+            breakfastDisplay.classList.add('visible');
+        }
+
+        // Load and display last breakfast if exists
         const savedHistory = loadHistory();
         recentBreakfasts.push(...savedHistory);
 
@@ -289,8 +299,9 @@
             disableButton();
             const lastBreakfast = recentBreakfasts[recentBreakfasts.length - 1];
             if (lastBreakfast) {
-                breakfastTitle.textContent = lastBreakfast.title;
-                breakfastDisplay.classList.add('visible');
+                // Find the full breakfast details from options
+                const fullBreakfast = breakfastOptions.find(option => option.title === lastBreakfast.title) || lastBreakfast;
+                displayBreakfast(fullBreakfast);
             }
         }
 
@@ -305,6 +316,8 @@
             
             recentBreakfasts.push({
                 title: breakfast.title,
+                description: breakfast.description,
+                details: breakfast.details,
                 date: new Date().toISOString()
             });
 
@@ -314,24 +327,16 @@
 
             saveHistory();
             
-            breakfastTitle.textContent = breakfast.title;
-            breakfastDescription.textContent = breakfast.description;
-            breakfastDetails.textContent = breakfast.details;
-            
-            breakfastDisplay.classList.remove('visible');
-            void breakfastDisplay.offsetWidth;
-            breakfastDisplay.classList.add('visible');
+            displayBreakfast(breakfast);
 
             localStorage.setItem('lastButtonClick', new Date().toISOString());
             disableButton();
         });
 
-       
-        // Add Not Possible link functionality
         notPossibleLink.addEventListener('click', function(e) {
             e.preventDefault();
-            localStorage.removeItem('lastButtonClick'); // Clear the last click time
-            enableButton(); // Re-enable the generate button
+            localStorage.removeItem('lastButtonClick');
+            enableButton();
         });
 
         setInterval(() => {
@@ -339,7 +344,6 @@
                 enableButton();
             }
         }, 60000);
-
 
     </script>
 </body>
