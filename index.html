@@ -98,7 +98,6 @@
             color: #888;
         }
 
-                /* Add to existing styles */
         .btn-disabled {
             opacity: 0.5;
             cursor: not-allowed;
@@ -117,6 +116,24 @@
 
         .button-message.visible {
             opacity: 1;
+        }
+
+        .not-possible-link {
+            color:black;
+            text-decoration: underline;
+            cursor: pointer;
+            font-size: 0.9rem;
+            margin-top: 1rem;
+            display: none;
+        }
+
+        .not-possible-link:hover {
+            color: #ff3939;
+            transition: 0.5s;
+
+        }
+    
+      
 
         @media (max-width: 768px) {
             .hero h1 {
@@ -130,7 +147,7 @@
     </style>
 </head>
 <body>
-   <section class="hero">
+    <section class="hero">
         <div class="hero-content">
             <h1>DailyRise</h1>
             <p>Your Daily Dose of Breakfast Inspiration</p>
@@ -140,10 +157,11 @@
                 <h2 class="breakfast-title" id="breakfastTitle"></h2>
                 <p class="breakfast-description" id="breakfastDescription"></p>
                 <p class="breakfast-details" id="breakfastDetails"></p>
+               
+                <p class="not-possible-link" id="notPossibleLink">Not possible? </p>
             </div>
         </div>
     </section>
-
     <script>
         const breakfastOptions = [
             {
@@ -196,17 +214,16 @@
         ];
 
         const generateButton = document.getElementById('generateBreakfast');
+        const notPossibleLink = document.getElementById('notPossibleLink');
         const buttonMessage = document.getElementById('buttonMessage');
         const breakfastDisplay = document.getElementById('breakfastDisplay');
         const breakfastTitle = document.getElementById('breakfastTitle');
         const breakfastDescription = document.getElementById('breakfastDescription');
         const breakfastDetails = document.getElementById('breakfastDetails');
 
-        // Track recent breakfasts
         const recentBreakfasts = [];
         const MAX_HISTORY = 4;
 
-        // Check if button was clicked today
         function wasClickedToday() {
             const lastClick = localStorage.getItem('lastButtonClick');
             if (!lastClick) return false;
@@ -217,20 +234,19 @@
             return lastClickDate.toDateString() === today.toDateString();
         }
 
-        // Disable button
         function disableButton() {
             generateButton.classList.add('btn-disabled');
             buttonMessage.textContent = 'Come back tomorrow for a new breakfast idea!';
             buttonMessage.classList.add('visible');
+            notPossibleLink.style.display = 'block'; // Show the Not Possible link
         }
 
-        // Enable button
         function enableButton() {
             generateButton.classList.remove('btn-disabled');
             buttonMessage.classList.remove('visible');
+            notPossibleLink.style.display = 'none'; // Hide the Not Possible link
         }
 
-        // Load previous selections
         function loadHistory() {
             const saved = localStorage.getItem('breakfastHistory');
             if (saved) {
@@ -244,12 +260,10 @@
             return [];
         }
 
-        // Save selections
         function saveHistory() {
             localStorage.setItem('breakfastHistory', JSON.stringify(recentBreakfasts));
         }
 
-        // Get new breakfast
         function getNewBreakfast() {
             const recentTitles = recentBreakfasts.map(item => item.title);
             const availableOptions = breakfastOptions.filter(option => 
@@ -265,14 +279,11 @@
             return availableOptions[randomIndex];
         }
 
-        // Initialize
         const savedHistory = loadHistory();
         recentBreakfasts.push(...savedHistory);
 
-        // Check button state on load
         if (wasClickedToday()) {
             disableButton();
-            // Show last selection if available
             const lastBreakfast = recentBreakfasts[recentBreakfasts.length - 1];
             if (lastBreakfast) {
                 breakfastTitle.textContent = lastBreakfast.title;
@@ -284,47 +295,49 @@
             e.preventDefault();
             
             if (wasClickedToday()) {
-                return; // Prevent multiple clicks on same day
+                return;
             }
             
-            // Get new breakfast
             const breakfast = getNewBreakfast();
             
-            // Add to history
             recentBreakfasts.push({
                 title: breakfast.title,
                 date: new Date().toISOString()
             });
 
-            // Maintain history length
             while (recentBreakfasts.length > MAX_HISTORY) {
                 recentBreakfasts.shift();
             }
 
-            // Save history
             saveHistory();
             
-            // Update display
             breakfastTitle.textContent = breakfast.title;
             breakfastDescription.textContent = breakfast.description;
             breakfastDetails.textContent = breakfast.details;
             
-            // Animation
             breakfastDisplay.classList.remove('visible');
             void breakfastDisplay.offsetWidth;
             breakfastDisplay.classList.add('visible');
 
-            // Record click time and disable button
             localStorage.setItem('lastButtonClick', new Date().toISOString());
             disableButton();
         });
 
-        // Optional: Check for new day every minute
+       
+        // Add Not Possible link functionality
+        notPossibleLink.addEventListener('click', function(e) {
+            e.preventDefault();
+            localStorage.removeItem('lastButtonClick'); // Clear the last click time
+            enableButton(); // Re-enable the generate button
+        });
+
         setInterval(() => {
             if (!wasClickedToday()) {
                 enableButton();
             }
         }, 60000);
+
+
     </script>
 </body>
 </html>
